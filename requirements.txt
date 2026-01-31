@@ -3,3 +3,8 @@ Flask-SQLAlchemy
 Pillow
 google-cloud-vision
 python-dotenv
+clip-interrogator
+torch
+transformers
+sentence-transformers
+accelerate
