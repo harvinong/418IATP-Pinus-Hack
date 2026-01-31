@@ -1,7 +1,4 @@
-if __name__ == "__main__":
-    from collection import MYDB
-else:
-    from entities.collection import MYDB
+from collection import MYDB
 from datetime import datetime
 from bson.objectid import ObjectId
 from typing import Any
@@ -98,6 +95,9 @@ class User:
             return True
         else:
             return False
+    
+    def __repr__(self) -> str:
+        return f"@{self.username} (id: {self._id.__str__()[-16:]})"
 
 if __name__ == "__main__":
     # myUser = User("@jeffbezo", "12345678", "Jeffrey", "Bezo", country = "Amazon")

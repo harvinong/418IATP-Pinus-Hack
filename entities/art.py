@@ -10,7 +10,7 @@ from bson.objectid import ObjectId
 from typing import Any
 from tkinter import filedialog
 from pprint import pprint
-from werkzeug.datastructures import FileStorage
+from io import BytesIO
 
 class Art:
     _DBCOLLECTION = MYDB["arts"]
@@ -77,26 +77,32 @@ class Art:
         else:
             return False
 
-def uploadArt(artist: User, imageFile: FileStorage|None = None) -> str:
+def uploadArt(artist: User, imageBuffer: BytesIO, extension: str) -> dict[str, Any]:
+    """
+    Upload the artwork into the blob storage
+
+    :param artist: The user instance that creates the artwork.
+    :type artist: User
+    :param imageBuffer: The artwork file buffer that the artist created.
+    :type imageBuffer: BytesIO
+    :param extension: The artwork file extension.
+    :type extension: str
+    :return: The vercel_blob upload response, containing keys: 'downloadUrl', 'pathname', 'url'.
+    :rtype: dict[str, Any]
+    """
     filename:str = f"A_{artist.username}{int(datetime.now().timestamp())}"
-    print(filename)
-    filepath: str = filedialog.askopenfilename()
-    print(filepath)
-    extension: str = filepath.split(".")[-1]
-    with open(filepath, 'rb') as f:
-        resp = vercel_blob.put(f'{filename}.{extension}', f.read(), multipart=True, verbose=True)
-        pprint(resp)
-    return filename + "." + extension
+    resp = vercel_blob.put(f'{filename}.{extension}', imageBuffer.read(), multipart=True, verbose=True)
+    return resp
        
 if __name__ == "__main__":
-    # for doc in Art._DBCOLLECTION.find():
-    #     pprint(doc)
-    username: str = input("Username: @")
-    myUser = User.findItem(username)
-    if not myUser: quit()
-    print(f"@{myUser.username} exists!")
-    filename = uploadArt(myUser)
-    print(filename)
+    for doc in Art._DBCOLLECTION.find():
+        pprint(doc)
+    # username: str = input("Username: @")
+    # myUser = User.findItem(username)
+    # if not myUser: quit()
+    # print(f"@{myUser.username} exists!")
+    # filename = uploadArt(myUser)
+    # print(filename)
 
 
     # myArt = Art(
