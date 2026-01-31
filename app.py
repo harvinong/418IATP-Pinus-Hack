@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
+from core import allowed_file, get_tags_for_image
 
 # Optional: Load environment variables for API keys
 from dotenv import load_dotenv
@@ -14,29 +15,11 @@ app.config['SECRET_KEY'] = 'your-super-secret-key' # Replace with a real secret 
 # Folder to store uploaded images
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# Allowed image extensions
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # --- Database Setup (Placeholder) ---
 # For a hackathon, we can start without the full DB implementation
 # and add it later. This keeps things simple initially.
 # e.g., using Flask-SQLAlchemy
-
-# --- Helper Functions ---
-def allowed_file(filename):
-    
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# --- AI Integration (Placeholder) ---
-def get_tags_for_image(image_path):
-    """
-    Analyzes an image using Google Vision AI and returns a list of tags.
-    """
-    # This is where you would integrate with the Google Cloud Vision API client.
-    # For now, we'll return mock data.
-    print(f"AI Tagging (mock): Analyzing {image_path}")
-    return ['mock_tag', 'art', 'painting', 'cool', 'abstract']
 
 # --- Routes ---
 @app.route('/')
