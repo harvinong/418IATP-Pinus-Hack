@@ -1,12 +1,26 @@
 {% extends "base.html" %}
 
 {% block head %}
-<title>There Pouchy</title>
+<title>Jala | Art Market</title>
+<link rel="stylesheet" href="./static/style.css">
 {% endblock %}
 
 {% block body %}
-<h1>Welcome to this website</h1>
-<p>Make yourself a <strike>home</strike> teh poci</p>
+<div class="navbar">
+    <div class="logo">
+        <img src="./static/Jala_Logo.png" alt="Jala Logo" width="60px">
+    </div>
+    <nav>
+        <ul>
+            <li><a href="">Home</a></li>
+            <li><a href="https://projectedens-garden.fandom.com/wiki/Eva_Tsunaka" target="_blank">Artworks</a></li>
+            <li><a href="">About</a></li>
+            <li><a href="">Contacts</a></li>
+            <li><a href="">Account</a></li>
+        </ul>
+    </nav>
+</div>
+
 <img src="{{ url_for('static', filename='very_essential_asset.jpg') }}" alt="Very Essential Asset", height="256">
 <a href="/README.md">See Documentation</a>
 {% endblock %}
