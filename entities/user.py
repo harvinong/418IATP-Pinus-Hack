@@ -1,4 +1,7 @@
-from collection import MYDB
+if __name__ == "__main__":
+    from collection import MYDB
+else:
+    from entities.collection import MYDB
 from datetime import datetime
 from bson.objectid import ObjectId
 from typing import Any

@@ -1,11 +1,16 @@
-from collection import MYDB
-from user import User
+if __name__ == "__main__":
+    from collection import MYDB
+    from user import User
+else:
+    from entities.collection import MYDB
+    from entities.user import User
 import vercel_blob, vercel_blob.blob_store as vb_store
 from datetime import datetime
 from bson.objectid import ObjectId
 from typing import Any
 from tkinter import filedialog
 from pprint import pprint
+from werkzeug.datastructures import FileStorage
 
 class Art:
     _DBCOLLECTION = MYDB["arts"]
@@ -72,7 +77,7 @@ class Art:
         else:
             return False
 
-def uploadArt(artist: User) -> str:
+def uploadArt(artist: User, imageFile: FileStorage|None = None) -> str:
     filename:str = f"A_{artist.username}{int(datetime.now().timestamp())}"
     print(filename)
     filepath: str = filedialog.askopenfilename()
@@ -80,7 +85,7 @@ def uploadArt(artist: User) -> str:
     extension: str = filepath.split(".")[-1]
     with open(filepath, 'rb') as f:
         resp = vercel_blob.put(f'{filename}.{extension}', f.read(), multipart=True, verbose=True)
-        print(resp)
+        pprint(resp)
     return filename + "." + extension
        
 if __name__ == "__main__":
