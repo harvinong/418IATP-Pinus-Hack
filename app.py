@@ -33,20 +33,24 @@ def upload():
     """
     Handles the artwork upload process.
     """
-    if request.method == 'POST':   
+    if request.method == 'POST':
+        # Form fields
         username = request.form["artist"]
+        title = request.form["title"]
+        desc = request.form["desc"]
+        price = request.form["price"]
+        userDefTags = request.form["tags"].split()
+
+        # Find artist
         artist = User.findItem(username)
         pprint(artist)
-
         if artist is None:
             return render_template('upload.html', message=f"@{username.lower()} is not in the database")
 
         file = request.files["file"]
             
         if file:
-            # filename = file.filename
-            # filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            # file.save(filepath)
+            # Uploading image to blob storage
             imageBuffer: BytesIO = file.stream # type: ignore
             if not file.filename:
                 return render_template('upload.html', message=f"Image filename is invalid.")
@@ -56,6 +60,9 @@ def upload():
             # TAGGING ===
             tags = get_tags_for_image(imageBuffer)
             print(f"Generated tags for {blobResponse.get("pathname")}: {tags}")
+
+            # Saving to database
+            Art(title, desc, blobResponse["url"], int(price.replace(".", "")), tags = userDefTags + tags)
             
             return render_template(
                 'upload.html', 
