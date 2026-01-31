@@ -1,15 +1,15 @@
 # Give tag for images
 from PIL import Image
-from clip_interrogator import Config, Interrogator
+# from clip_interrogator import Config, Interrogator
 from io import BytesIO
 
 # Configuration for the CLIP Interrogator
 # Using a smaller model for faster inference on CPU
-config = Config(clip_model_name="ViT-L-14/openai")
+# config = Config(clip_model_name="ViT-L-14/openai")
 
 # Create a global instance of the Interrogator
 # This will download the models on the first run
-ci = Interrogator(config)
+# ci = Interrogator(config)
 
 def get_tags_for_image(artworkBuffer: BytesIO):
     """
@@ -22,7 +22,7 @@ def get_tags_for_image(artworkBuffer: BytesIO):
 
     print(f"AI Tagging: Analyzing Image")
     image = Image.open(artworkBuffer).convert('RGB')
-    # return ["lorem", "ipsum"]
+    return ["lorem", "ipsum"]
 
     # Generate the prompt
     prompt = ci.interrogate(image) # type: ignore
