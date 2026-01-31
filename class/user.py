@@ -1,14 +1,8 @@
-# Reference: https://www.w3schools.com/python/python_mongodb_getstarted.asp
-import pymongo, os
+from collection import MYDB
 from datetime import datetime
-from pprint import pprint
 from bson.objectid import ObjectId
 from typing import Any
-
-MONGODB_URI: str = os.environ["MONGODB_URI"]
-CLIENT = pymongo.MongoClient(MONGODB_URI)
-MYDB = CLIENT["JalaArtMarket"]
-
+from pprint import pprint
 
 class User:
     _DBCOLLECTION = MYDB["users"]
@@ -49,22 +43,9 @@ class User:
     def deleteItem(self) -> None:
         self._DBCOLLECTION.delete_one({"_id": self._id})
 
-
 if __name__ == "__main__":
-    print(MYDB.list_collection_names())
-    
-    # userdata = [
-    #     {"name": "Harvin", "age": 19, "species": "fox"},
-    #     {"name": "Jack", "age": 20, "species": "alpha wolf/angel/demon"},
-    #     {"name": "William", "age": 18, "species": "cat"},
-    # ]
-
-    # x = usersColl.insert_many(userdata)
-
-    # print(x.inserted_ids)
-    # print(mydb.list_collection_names())
-    # userinstances = [
-    #     User("@harvinong", "xxxxxx", "Harvin", country = "Indonesia", website = "vintageharmonies.neocities.org"),
-    #     User("@jackchris", "xxxxxx", "Jack", country = "Indonesia"),
-    #     User("@whansel", "xxxxxx", "William", country = "Indonesia")
-    # ]
+    # myUser = User("@jeffbezo", "12345678", "Jeffrey", "Bezo", country = "Amazon")
+    # pprint(User.findItem("@whansel"))
+    # pprint(User.findItem("@Mark"))
+    for doc in User._DBCOLLECTION.find():
+        pprint(doc)
