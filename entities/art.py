@@ -31,7 +31,7 @@ class Art:
             self._id = existingData.get("_id")
 
     @staticmethod
-    def fromDict(data: dict) -> Art:
+    def fromDict(data: dict):
         return Art(**data)
 
     @staticmethod
@@ -40,7 +40,7 @@ class Art:
         return userdata
     
     @staticmethod
-    def findArt(artID: ObjectId) -> Art|None:
+    def findArt(artID: ObjectId): # -> Art|None:
         userdata = Art._DBCOLLECTION.find_one({"_id": artID})
         if not userdata:
             return
