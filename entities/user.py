@@ -68,6 +68,13 @@ class User:
         userData = User._findItemData(username)
         if userData:
             return User.fromDict(userData)
+        
+    @staticmethod
+    def findItemByID(userID: ObjectId) -> User|None:
+        userData = User._DBCOLLECTION.find_one({"_id": userID})
+        if userData:
+            return User.fromDict(userData)
+
     
     def _insertItem(self) -> ObjectId|None:
         """Insert the user into the database. Please don't use this function during development."""

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Jala | {{ artInstance.title }}</title>
+{% endblock %}
+
+{% block body %}
+<h1>{{ artInstance.title }}</h1>
+{% if userInstance: %}
+    <span>by <strong>{{ userInstance.fullName }} (@{{ userInstance.username }})</strong></span><br>
+{% else: %}
+    <span>Unknown Artist</span><br>
+{% endif %}
+<span>Created {{ artAge }} minutes ago</span><br>
+
+<img src="{{ artInstance.url }}" alt="{{ artInstance.title }}" height="512px">
+<p>{{ artInstance.desc }}</p>
+<p>Price: <strong>${{ price }}</strong></p>
+
+<h2>Tags:</h2>
+<ul>
+    {% for tag in artInstance.tags: %}
+    <li>{{ tag }}</li>
+    {% endfor %}
+</ul>
+
+
+<h1>Art Info</h1>
+<table border="1">
+    <thead>
+        <th>Key</th>
+        <th>Value</th>
+    </thead>
+    <tbody>
+        {% for key, value in artInstance.__dict__.items(): %}
+            <tr>
+                <th>{{ key }}</th>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from entities.art import *
 from entities.user import *
 from tag import get_tags_for_image
+from bson.objectid import ObjectId
+from datetime import datetime
 
 app = Flask(__name__)
 # UPLOAD_FOLDER = os.path.join('static', 'uploads')
@@ -27,6 +29,24 @@ def userPage(user:str):
         return "404 Not Found"
     
     return render_template("userPage.html", userInstance = userInstance)
+
+@app.get("/art/<id>")
+def artPage(id: str):
+    if not ObjectId.is_valid(id):
+        return "Invalid id"
+    
+    artInstance = Art.findArt(ObjectId(id))
+    if not artInstance:
+        return "404 Not Found"
+    
+    userInstance = User.findItemByID(artInstance.artistID) if artInstance.artistID else None
+    
+    return render_template(
+        "artwork.html", 
+        artInstance = artInstance, 
+        userInstance = userInstance, 
+        price = round(artInstance.price / 100, 2),
+        artAge = round((datetime.now() - artInstance.creationDate).total_seconds() / 60))
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -62,7 +82,7 @@ def upload():
             print(f"Generated tags for {blobResponse.get("pathname")}: {tags}")
 
             # Saving to database
-            Art(title, desc, blobResponse["url"], int(price.replace(".", "")), tags = userDefTags + tags)
+            Art(title, desc, blobResponse["url"], int(price.replace(".", "")), tags = userDefTags + tags, artistID = artist._id)
             
             return render_template(
                 'upload.html', 
