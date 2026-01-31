@@ -13,5 +13,8 @@ venv/
 *.db
 *.sqlite3
 
+# Cache
+cache/
+
 # Gemini
 GEMINI.md
