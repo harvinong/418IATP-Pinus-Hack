@@ -20,3 +20,38 @@ nav ul li{
     display: inline-block;
     margin-right: 20px;
 }
+a{
+    text-decoration: none;
+    color: #6497B1;
+}
+h1{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 80px;
+    color: #03396C;
+}
+p{
+    color: #005B96;
+}
+.container{
+    max-width: 1600px;
+    margin: auto;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+.row{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    background-color: rgb(220, 229, 251);
+}
+.col-1{
+    flex-basis: 50%;
+    min-width: 300px;
+}
+
+.col-2{
+    max-width: 100%;
+    padding: 20px;
+    justify-self: right;
+}

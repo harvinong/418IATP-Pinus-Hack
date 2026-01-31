@@ -6,19 +6,45 @@
 {% endblock %}
 
 {% block body %}
-<div class="navbar">
-    <div class="logo">
-        <img src="./static/Jala_Logo.png" alt="Jala Logo" width="60px">
+<div class="container">
+    <div class="navbar">
+        <div class="logo">
+            <img src="./static/JalaLogo.svg" alt="Jala Logo" width="60px">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="">Home</a></li>
+                <li><a href="https://projectedens-garden.fandom.com/wiki/Eva_Tsunaka" target="_blank">Artworks</a></li>
+                <li><a href="">About</a></li>
+                <li><a href="">Contacts</a></li>
+                <li><a href="">Account</a></li>
+                <li><a href="/README.md">See Documentation</a></li>
+            </ul>
+        </nav>
     </div>
-    <nav>
-        <ul>
-            <li><a href="">Home</a></li>
-            <li><a href="https://projectedens-garden.fandom.com/wiki/Eva_Tsunaka" target="_blank">Artworks</a></li>
-            <li><a href="">About</a></li>
-            <li><a href="">Contacts</a></li>
-            <li><a href="">Account</a></li>
-            <li><a href="/README.md">See Documentation</a></li>
-        </ul>
-    </nav>
+    <div class="row">
+        <div class="col-1">
+            <h1>Welcome to Jala!</h1>
+            <p>Cast a net to unlimited creativity. A place where creatives and collectors come together to purchase and collect artwork. Browse and purchase artwork from talented artist to build your collection, or share your creations to others who share your tastes and preferences.</p>
+        </div>
+        <div class="col-2">
+            <img src="./static/kruzNSandwich.png" alt="ArtbyHarvinOng" width="500px">
+            <p style="text-align: right;">by Harvin Ong</p>
+        </div>
+    </div>
+    <div class="carousel">
+        <div class="card">
+            <h3>Card 1</h3>
+        </div>
+        <div class="card">
+            <h3>Card 2</h3>
+        </div>
+        <div class="card">
+            <h3>Card 3</h3>
+        </div>
+        <div class="card">
+            <h3>Card 4</h3>
+        </div>
+    </div>
 </div>
 {% endblock %}
