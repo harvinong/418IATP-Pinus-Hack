@@ -16,17 +16,17 @@ def index():
     """
     return render_template('main.html')
 
-@app.get("/user")
-def selfUser():
+@app.get("/user/")
+def selfUserPage():
     return "Hello, user! :3"
 
-@app.get("/@<user>")
-def user(user:str):
-    return f"Hello, {user}!"
-
-@app.get("/<nonexistent>")
-def notFound(nonexistent):
-    return f"<h1>404 Not Found</h1><p>\"{nonexistent}\" does not exist.</p><p>Please consider going outside and touching grass!</p>"
+@app.get("/user/@<user>")
+def userPage(user:str):
+    userInstance = User.findItem(user.lower())
+    if not userInstance:
+        return "404 Not Found"
+    
+    return render_template("userPage.html", userInstance = userInstance)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -64,6 +64,10 @@ def upload():
                 imageLink = blobResponse.get("url"))
 
     return render_template('upload.html')
+
+@app.get("/<nonexistent>")
+def notFound(nonexistent):
+    return f"<h1>404 Not Found</h1><p>\"{nonexistent}\" does not exist.</p><p>Please consider going outside and touching grass!</p>"
 
 if __name__ == '__main__':
     # Creates the upload folder if it doesn't exist

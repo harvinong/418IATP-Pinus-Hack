@@ -1,4 +1,4 @@
-from collection import MYDB
+from entities.collection import MYDB
 from datetime import datetime
 from bson.objectid import ObjectId
 from typing import Any
