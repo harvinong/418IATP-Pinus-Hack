@@ -65,10 +65,8 @@ class User:
     
     def _insertItem(self) -> ObjectId|None:
         """Insert the user into the database. Please don't use this function during development."""
-        existingData = self.findItem(self.username)
-        if existingData is None:
-            idNum = self._DBCOLLECTION.insert_one(self.__dict__).inserted_id
-            return idNum
+        idNum = self._DBCOLLECTION.insert_one(self.__dict__).inserted_id
+        return idNum
     
     def update(self) -> None:
         """Reflect the user's updated attributes into the database."""
