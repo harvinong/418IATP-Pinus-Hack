@@ -7,7 +7,7 @@ from pprint import pprint
 class User:
     _DBCOLLECTION = MYDB["users"]
 
-    def __init__(self, username: str, passHash: str, fullName: str, surName: str|None = None, *, country: str|None = None, website: str|None = None, creationDate: datetime = datetime.now()) -> None:
+    def __init__(self, username: str, passHash: str, fullName: str, surName: str|None = None, *, country: str|None = None, website: str|None = None, creationDate: datetime = datetime.now(), _id: ObjectId|None = None) -> None:
         """
         User is someone who uses the service. They can be a collector, an artist, or both.
         
@@ -32,7 +32,7 @@ class User:
         self.country: str|None = country
         self.website: str|None = website
 
-        existingData = self.findItem(self.username)
+        existingData = self._findItemData(self.username)
         if existingData is None:
             self._id = self._insertItem()
         else:
@@ -51,7 +51,7 @@ class User:
         return User(**data)
 
     @staticmethod
-    def findItem(username: str) -> dict[str, Any]|None:
+    def _findItemData(username: str) -> dict[str, Any]|None:
         """
         Find a user by their username.
         
@@ -60,15 +60,19 @@ class User:
         :return: a data dictionary if the user is found. None otherwise.
         :rtype: dict[str, Any] | None
         """
-        userdata = User._DBCOLLECTION.find_one({"username": username})
+        userdata = User._DBCOLLECTION.find_one({"username": username.lower()})
         return userdata
+    
+    @staticmethod
+    def findItem(username: str) -> User|None:
+        userData = User._findItemData(username)
+        if userData:
+            return User.fromDict(userData)
     
     def _insertItem(self) -> ObjectId|None:
         """Insert the user into the database. Please don't use this function during development."""
-        existingData = self.findItem(self.username)
-        if existingData is None:
-            idNum = self._DBCOLLECTION.insert_one(self.__dict__).inserted_id
-            return idNum
+        idNum = self._DBCOLLECTION.insert_one(self.__dict__).inserted_id
+        return idNum
     
     def update(self) -> None:
         """Reflect the user's updated attributes into the database."""
@@ -93,7 +97,7 @@ class User:
             return False
 
 if __name__ == "__main__":
-    myUser = User("@jeffbezo", "12345678", "Jeffrey", "Bezo", country = "Amazon")
+    # myUser = User("@jeffbezo", "12345678", "Jeffrey", "Bezo", country = "Amazon")
     # pprint(User.findItem("@whansel"))
     # pprint(User.findItem("@Mark"))
     for doc in User._DBCOLLECTION.find():
