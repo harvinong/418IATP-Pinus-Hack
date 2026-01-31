@@ -1,8 +1,10 @@
 from collection import MYDB
+from user import User
 import vercel_blob, vercel_blob.blob_store as vb_store
 from datetime import datetime
 from bson.objectid import ObjectId
 from typing import Any
+from tkinter import filedialog
 from pprint import pprint
 
 class Art:
@@ -70,12 +72,28 @@ class Art:
         else:
             return False
 
-def uploadArt():
-    pass
+def uploadArt(artist: User) -> str:
+    filename:str = f"A_{artist.username}{int(datetime.now().timestamp())}"
+    print(filename)
+    filepath: str = filedialog.askopenfilename()
+    print(filepath)
+    extension: str = filepath.split(".")[-1]
+    with open(filepath, 'rb') as f:
+        resp = vercel_blob.put(f'{filename}.{extension}', f.read(), multipart=True, verbose=True)
+        print(resp)
+    return filename + "." + extension
        
 if __name__ == "__main__":
-    for doc in Art._DBCOLLECTION.find():
-        pprint(doc)
+    # for doc in Art._DBCOLLECTION.find():
+    #     pprint(doc)
+    username: str = input("Username: @")
+    myUser = User.findItem(username)
+    if not myUser: quit()
+    print(f"@{myUser.username} exists!")
+    filename = uploadArt(myUser)
+    print(filename)
+
+
     # myArt = Art(
     #     "Happy Strike", 
     #     "A happy fox!",
