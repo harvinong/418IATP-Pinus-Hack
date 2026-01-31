@@ -91,7 +91,7 @@ class User:
             return False
 
 if __name__ == "__main__":
-    myUser = User("@jeffbezo", "12345678", "Jeffrey", "Bezo", country = "Amazon")
+    # myUser = User("@jeffbezo", "12345678", "Jeffrey", "Bezo", country = "Amazon")
     # pprint(User.findItem("@whansel"))
     # pprint(User.findItem("@Mark"))
     for doc in User._DBCOLLECTION.find():

@@ -8,13 +8,13 @@ from pprint import pprint
 class Art:
     _DBCOLLECTION = MYDB["arts"]
 
-    def __init__(self, title: str, desc: str, url: str, price: int, *, artistID: ObjectId|None = None, country: str|None = None, tags: set[str] = set(), creationDate: datetime = datetime.now()) -> None:
+    def __init__(self, title: str, desc: str, url: str, price: int, *, artistID: ObjectId|None = None, country: str|None = None, tags: list[str]|None = None, creationDate: datetime = datetime.now(), _id: ObjectId|None = None) -> None:
         self.title: str = title
         self.desc: str = desc
         self.url: str = url
         self.price: int = price
         self.artistID: ObjectId|None = artistID
-        self.tags: set[str] = tags
+        self.tags: list[str] = [] if tags is None else tags
         self.creationDate: datetime = creationDate
         self.country: str|None = country
 
@@ -29,9 +29,16 @@ class Art:
         return Art(**data)
 
     @staticmethod
-    def findArts(artistID: ObjectId) -> dict[str, Any]|None:
-        userdata = Art._DBCOLLECTION.find_one({"artistID": artistID})
+    def findArtsFromArtist(artistID: ObjectId): #-> list[dict[str, Any]]|None:
+        userdata = Art._DBCOLLECTION.find({"artistID": artistID})
         return userdata
+    
+    @staticmethod
+    def findArt(artID: ObjectId) -> Art|None:
+        userdata = Art._DBCOLLECTION.find_one({"_id": artID})
+        if not userdata:
+            return
+        return Art.fromDict(userdata)
 
     def _insertItem(self) -> ObjectId|None:
         """Insert the art into the database. Please don't use this function during development."""
@@ -39,7 +46,7 @@ class Art:
         return idNum
         
     def _findItem(self) -> dict[str, Any] | None:
-        return Art._DBCOLLECTION.find_one(self.__dict__)\
+        return Art._DBCOLLECTION.find_one({k: v for k, v in self.__dict__.items() if k != "creationDate"})\
     
     def update(self) -> None:
         """Reflect the user's updated attributes into the database."""
@@ -67,4 +74,30 @@ def uploadArt():
     pass
        
 if __name__ == "__main__":
-    pass
+    for doc in Art._DBCOLLECTION.find():
+        pprint(doc)
+    # myArt = Art(
+    #     "Happy Strike", 
+    #     "A happy fox!",
+    #     "https://vintageharmonies.neocities.org/sprites/sprite%205.png",
+    #     1000, artistID = ObjectId("697dd5e443e3a7ac598cf3c7"),
+    #     country = "Indonesia",
+    #     tags = ["fox", "digital", "sticker"])
+    
+    # print(myArt._id)
+    # print(myArt.__dict__)
+
+    # arts = Art.findArts(ObjectId("697dd5e443e3a7ac598cf3c7"))
+    # for art in arts:
+    #     pprint(art)
+
+    # myArt = Art.findArt(ObjectId("697e182922884bbed78df3f4"))
+    # pprint(myArt.__dict__)
+    # if not myArt: quit()
+    # myArt.title = "Strike Full of Joy"
+    # pprint(myArt.__dict__)
+    # myArt.update()
+
+    # myArt = Art.findArt(ObjectId("697e182922884bbed78df3f4"))
+    # if myArt:
+    #     print(myArt.deleteItem(ObjectId("697dd5e443e3a7ac598cf3c7")))
