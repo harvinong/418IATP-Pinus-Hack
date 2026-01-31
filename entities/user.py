@@ -1,7 +1,7 @@
 from entities.collection import MYDB
 from datetime import datetime
 from bson.objectid import ObjectId
-from typing import Any
+from typing import Any, Self
 from pprint import pprint
 
 class User:
@@ -39,7 +39,7 @@ class User:
             self._id = existingData.get("_id")
 
     @staticmethod
-    def fromDict(data: dict) -> User:
+    def fromDict(data: dict):
         """
         Instantiate User from a data dictionary. Best paired with User.findItem().
         
@@ -64,13 +64,13 @@ class User:
         return userdata
     
     @staticmethod
-    def findItem(username: str) -> User|None:
+    def findItem(username: str): # -> User|None:
         userData = User._findItemData(username)
         if userData:
             return User.fromDict(userData)
         
     @staticmethod
-    def findItemByID(userID: ObjectId) -> User|None:
+    def findItemByID(userID: ObjectId): # -> User|None:
         userData = User._DBCOLLECTION.find_one({"_id": userID})
         if userData:
             return User.fromDict(userData)

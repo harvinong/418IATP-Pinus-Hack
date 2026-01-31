@@ -100,4 +100,4 @@ if __name__ == '__main__':
     # Creates the upload folder if it doesn't exist
     # if not os.path.exists(UPLOAD_FOLDER):
     #     os.makedirs(UPLOAD_FOLDER)
-    app.run(debug=True)
+    app.run()
