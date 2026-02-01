@@ -24,21 +24,30 @@ app.config["SESSION_MONGODB_COLLECTION"] = 'sessions'
 Session(app)
 
 # Middlewares
+def matchpath(path: str, routes: list[str]):
+    return path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]
+
 @app.before_request
 def authenticate():
-    if request.path not in ["/", "/login/", "/logout/", "/register/"] and \
+    if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/"]) and \
         not request.path.startswith("/static/") and \
         not session.get("username"):
+        print("Authentication in progress")
+        # print(request.path not in ["/", "/login/", "/logout", "/register"])
+        # print(not request.path.startswith("/static/"))
+        # print(not session.get("username"))
+        # print()
         return redirect("/login")
-    elif request.path == "/login" and session.get("username"):
+    elif matchpath(request.path, ["/login/"]) and session.get("username"):
+        print("Redirecting to user")
         return redirect("/user")
 
 @app.after_request
 def trackVisitUrl(req):
-    if request.path not in ["/", "/login/", "/logout/", "/register/", "/user/edit/"] and \
+    if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/", "/user/edit/", "/user/delete/"]) and \
         not request.path.startswith("/static/"):
         session["visiting"] = request.path
-        print(session.get("visiting"))
+        print("trackVisitUrl()", session.get("visiting"))
     return req
 
 def hashPassword(password: str):
@@ -56,7 +65,7 @@ def index():
     return render_template('main.html')
 
 # Session Management
-@app.route('/register', methods = ["GET", "POST"])
+@app.route('/register/', methods = ["GET", "POST"])
 def register():
     if request.method == "POST":
         password: str = request.form["password"].strip()
@@ -84,7 +93,7 @@ def register():
     
     return render_template("registration.html", countries = COUNTRIES)
 
-@app.route('/login', methods = ["GET", "POST"])
+@app.route('/login/', methods = ["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form["username"]
@@ -94,14 +103,18 @@ def login():
         if userInstance and userInstance.passHash == passhash:
             # record username and passHash in session
             session["username"] = username
+            print(session.get("username"))
             visiting = session.get("visiting")
-            return redirect("/user") if not visiting else redirect(visiting)
+            print("Login session:")
+            print(not visiting)
+            print(not visiting or not matchpath(visiting, ["/login"]))
+            return redirect("/user") if not visiting or not matchpath(visiting, ["/login"]) else redirect(visiting)
         else:
             return render_template("login.html", status = "fail")
 
     return render_template("login.html")
 
-@app.get("/logout")
+@app.get("/logout/")
 def logout():
     session.clear()
     return render_template("logout.html")
@@ -141,15 +154,54 @@ def creationPage(user:str|None = None):
         artInstances = artInstances
         )
 
-@app.get("/user/edit/")
+@app.route("/user/edit/", methods = ["GET", "POST"])
 def editUser():
     userInstance = getUser()
-    print(session.get("visiting"))
-
     if not userInstance:
         return not_found()
+    
+    if request.method == "POST":
+        userInstance = getUser()
+        if not userInstance:
+            return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES, error = "user does not exist!")
+        
+        oldUsername: str = userInstance.username
+        newUsername: str = request.form["username"].lower().strip()
+
+        print(oldUsername, newUsername, oldUsername != newUsername)
+        if oldUsername != newUsername and User.findItem(newUsername):
+            return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES, error = "username exists!")
+
+
+        passhash: str = hashPassword(request.form["password"])
+        if passhash != userInstance.passHash:
+            return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES, error = "Password does not match!")
+
+        # Get changes
+        userInstance.username = newUsername
+        userInstance.fullName = request.form["fullName"].strip()
+        userInstance.surName = request.form["surname"].strip()
+        country: str|None = request.form["country"]
+        userInstance.country = country if country != "unspecified" else None
+        website: str|None = request.form["website"]
+        userInstance.website = website.strip() if website != "" else None
+
+        # Save changes
+        userInstance.update()
+
+        visiting = session.get("visiting", "/")
+        return redirect("/user") if not visiting or not matchpath(visiting, ["/login"]) else redirect(visiting)
+
     print("editUser() -> ", session.get("visiting"))
     return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES)
+
+@app.route("/user/delete/")
+def deleteUser():
+    userInstance = getUser()
+    if not userInstance:
+        return not_found()
+    
+    return render_template("deleteUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance)
 
 # Art Management
 @app.get("/art/<id>/")
