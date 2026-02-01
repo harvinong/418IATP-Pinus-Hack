@@ -11,7 +11,7 @@ from hashlib import sha256
 app = Flask(__name__)
 # Reference: https://www.geeksforgeeks.org/python/how-to-use-flask-session-in-python-flask/
 app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
+# app.config["SESSION_TYPE"] = "filesystem"
 # UPLOAD_FOLDER = os.path.join('static', 'uploads')
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
