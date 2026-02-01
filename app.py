@@ -18,21 +18,14 @@ app.config["SESSION_TYPE"] = "mongodb"
 app.config["SESSION_MONGODB"] = CLIENT
 app.config["SESSION_MONGODB_DB"] = 'JalaArtMarket'
 app.config["SESSION_MONGODB_COLLECTION"] = 'sessions'
-# app.config["SESSION_TYPE"] = "filesystem"
-# UPLOAD_FOLDER = os.path.join('static', 'uploads')
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
 
 # Middlewares
 def matchpath(path: str, routes: list[str]):
-    # print(f"matchpath({path}, {routes}) -> {path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]}")
-    # print("   ", path, path in routes, [route[:-1] if route[-1] == "/" else route + "/" for route in routes], path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes])
     return path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]
 
 def visitPreviousUrl():
     visiting = session.get("visiting", None)
-    # print(matchpath(visiting, ["/login/"]))
-    # print(f"Going to visit {visiting}?", (visiting and not matchpath(visiting, ["/login/"])))
     return redirect(visiting) if visiting and not matchpath(visiting, ["/login/"]) else redirect("/user")
 
 @app.after_request
@@ -245,10 +238,6 @@ def allCreationsPage():
         artInstances = table,
         userInstance = "all"
     )
-
-    
-
-
 
 @app.get("/art/<id>/")
 def artPage(id: str):
