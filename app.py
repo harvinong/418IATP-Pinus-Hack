@@ -77,7 +77,6 @@ def register():
     
     return render_template("registration.html", countries = COUNTRIES)
 
-
 @app.route('/login', methods = ["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -101,18 +100,27 @@ def logout():
     return render_template("logout.html")
 
 # User Management
-@app.get("/user/@<user>")
-def userPage(user:str):
-    print(user)
-    userInstance = User.findItem(user.lower())
+def getUser(user: str|None = None) -> User|None:
+    if user is None:
+        username = session["username"]
+    else:
+        username = user.lower()
+    userInstance = User.findItem(username)
+    return userInstance
+
+@app.get("/user/@<user>/")
+@app.get("/user/")
+def userPage(user:str|None = None):
+    userInstance = getUser(user)
     if not userInstance:
         return "404 Not Found"
     
     return render_template("userPage.html", userInstance = userInstance)
 
-@app.get("/user/@<user>/creations")
-def creationPage(user:str):
-    userInstance = User.findItem(user.lower())
+@app.get("/user/@<user>/creations/")
+@app.get("/user/creations/")
+def creationPage(user:str|None = None):
+    userInstance = getUser(user)
     if not userInstance:
         return "404 Not Found"
     
@@ -124,17 +132,18 @@ def creationPage(user:str):
         artInstances = artInstances
         )
 
-@app.get("/user")
-def selfUserPage():
-    username = session["username"]
-    userInstance = User.findItem(username)
+@app.get("/user/edit")
+def editUser():
+    userInstance = getUser()
+
     if not userInstance:
-        return "404 Not Found"
-    
-    return render_template("userPage.html", userInstance = userInstance)
+        return not_found()
+
+    return render_template("editUser.html", userInstance = userInstance)
+
 
 # Art Management
-@app.get("/art/<id>")
+@app.get("/art/<id>/")
 def artPage(id: str):
     if not ObjectId.is_valid(id):
         return "Invalid id"
@@ -151,7 +160,7 @@ def artPage(id: str):
         userInstance = userInstance,
         artAge = round(artInstance.getAge().total_seconds()/60))
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/art/upload/', methods=['GET', 'POST'])
 def upload():
     """
     Handles the artwork upload process.
@@ -197,8 +206,11 @@ def upload():
 
 # Not Found (404)
 @app.errorhandler(404)
-def not_found(err):
-    return render_template("notfound.html")
+def not_found(err = None):
+    if request.path.islower():
+        return render_template("notfound.html")
+    else:
+        return redirect(request.path.lower())
 
 if __name__ == '__main__':
     # Creates the upload folder if it doesn't exist
