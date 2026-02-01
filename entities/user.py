@@ -85,7 +85,7 @@ class User:
         """Reflect the user's updated attributes into the database."""
         self._DBCOLLECTION.find_one_and_update({"_id": self._id}, {"$set": self.__dict__})
     
-    def deleteItem(self, username: str, passHash, str) -> bool:
+    def deleteItem(self, passHash: str) -> bool:
         """
         Delete the user from the database. Provide username and passHash to safely delete.
         
@@ -97,7 +97,7 @@ class User:
         :return: 
         :rtype: bool
         """
-        if username.lower() == self.username and passHash == self.passHash:
+        if passHash == self.passHash:
             self._DBCOLLECTION.delete_one({"_id": self._id})
             return True
         else:

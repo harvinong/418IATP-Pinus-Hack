@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Jala | Edit User</title>
+{% endblock %}
+
+{% block body %}
+<h1>Edit User</h1>
+
+{% if error: %}
+<p>{{error}}</p>
+{% endif %}
+
+<form action="/user/edit" method="post">
+    <label for="username">Username</label>
+    <input type="text" name="username" id="username" value="{{userInstance.username}}" required>
+    <br>
+
+    <label for="fullName">Full Name</label>
+    <input type="text" name="fullName" id="fullName" value="{{userInstance.fullName}}" required>
+    <br>
+    
+    <label for="surname">Surname</label>
+    <input type="text" name="surname" id="surname" value="{{userInstance.surName}}">
+    <br>
+
+    <label for="website">Website</label>
+    <input type="url" name="website" id="website" value="{{userInstance.website if userInstance.website else ''}}">
+    <br>
+
+    <label for="country">Country</label>
+    <select name="country" id="country" required>
+        <option value="unspecified">Unspecified</option>
+        {% for country in countries: %}
+            {% if country == userInstance.country: %}
+                <option value="{{country}}" selected>{{country}}</option>
+            {% else: %}
+                <option value="{{country}}">{{country}}</option>
+            {% endif %}
+        {% endfor %}
+        <option value="other">Other...</option>
+    </select>
+    <br>
+
+    <label for="password">Enter your password to confirm any changes</label>
+    <input type="password" 
+    name="password" 
+    id="password" 
+    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*[-_@])(?!.*\s).{8,}"
+    title="Password must contain between 8 - 16 characters, no spaces, contain at least one digit, lowercase letter, uppercase letter, and special characters (-_@)."
+    minlength="8" maxlength="16" 
+    required>
+    <br>
+
+    <input type="submit" value="Save Changes">
+    <a href="/user">
+        <input type="button" value="Cancel">
+    </a>
+
+</form>
+
+{% endblock %}
