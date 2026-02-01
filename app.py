@@ -26,13 +26,20 @@ Session(app)
 # Middlewares
 @app.before_request
 def authenticate():
-    if request.path not in ["/", "/login", "/logout", "/register"] and \
+    if request.path not in ["/", "/login/", "/logout/", "/register/"] and \
         not request.path.startswith("/static/") and \
         not session.get("username"):
-        session["visiting"] = request.path
         return redirect("/login")
     elif request.path == "/login" and session.get("username"):
         return redirect("/user")
+
+@app.after_request
+def trackVisitUrl(req):
+    if request.path not in ["/", "/login/", "/logout/", "/register/", "/user/edit/"] and \
+        not request.path.startswith("/static/"):
+        session["visiting"] = request.path
+        print(session.get("visiting"))
+    return req
 
 def hashPassword(password: str):
     password = request.form["password"]
@@ -118,7 +125,9 @@ def userPage(user:str|None = None):
     return render_template("userPage.html", userInstance = userInstance)
 
 @app.get("/user/@<user>/creations/")
+@app.get("/user/@<user>/creation/")
 @app.get("/user/creations/")
+@app.get("/user/creation/")
 def creationPage(user:str|None = None):
     userInstance = getUser(user)
     if not userInstance:
@@ -132,15 +141,15 @@ def creationPage(user:str|None = None):
         artInstances = artInstances
         )
 
-@app.get("/user/edit")
+@app.get("/user/edit/")
 def editUser():
     userInstance = getUser()
+    print(session.get("visiting"))
 
     if not userInstance:
         return not_found()
-
-    return render_template("editUser.html", userInstance = userInstance)
-
+    print("editUser() -> ", session.get("visiting"))
+    return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES)
 
 # Art Management
 @app.get("/art/<id>/")
