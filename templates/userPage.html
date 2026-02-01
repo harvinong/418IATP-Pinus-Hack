@@ -5,19 +5,23 @@
 {% endblock %}
 
 {% block body %}
-<h1>Hello, {{ userInstance.fullName }}</h1>
-<table border="1">
-    <thead>
-        <th>Key</th>
-        <th>Value</th>
-    </thead>
-    <tbody>
-        {% for key, value in userInstance.__dict__.items(): %}
-            <tr>
-                <th>{{ key }}</th>
-                <td>{{ value }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<h1>{{ userInstance.fullName }}</h1>
+<h2>@{{ userInstance.username }} &bull; {{ userInstance.country }} &bull; <a href="{{ userInstance.website }}" target="_blank">Website</a></h2>
+<h3>{{ userInstance.creationDate }}</h3>
+<br>
+{% if inSession: %}
+<h2>User Settings</h2>
+<ul>
+    <li><a href="/user/edit">Edit User Data</a></li>
+    <li><a href="/user/delete">Delete User Data</a></li>
+</ul>
+<br>
+{% endif %}
+
+<h2>Overview</h2>
+<ul>
+    <li><a href="/user/@{{ userInstance.username }}/creations">Creations</a></li>
+    <li><a href="/user/@{{ userInstance.username }}/collections">Collections</a></li>
+    <li><a href="/user/@{{ userInstance.username }}/interests">Interests</a></li>
+</ul>
 {% endblock %}

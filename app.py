@@ -25,35 +25,35 @@ Session(app)
 
 # Middlewares
 def matchpath(path: str, routes: list[str]):
-    print(f"matchpath({path}, {routes}) -> {path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]}")
+    # print(f"matchpath({path}, {routes}) -> {path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]}")
     # print("   ", path, path in routes, [route[:-1] if route[-1] == "/" else route + "/" for route in routes], path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes])
     return path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]
 
 def visitPreviousUrl():
     visiting = session.get("visiting", None)
     # print(matchpath(visiting, ["/login/"]))
-    print(f"Going to visit {visiting}?", (visiting and not matchpath(visiting, ["/login/"])))
+    # print(f"Going to visit {visiting}?", (visiting and not matchpath(visiting, ["/login/"])))
     return redirect(visiting) if visiting and not matchpath(visiting, ["/login/"]) else redirect("/user")
 
 @app.after_request
 def authenticate(req):
-    if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/"]) and \
+    if not matchpath(request.path, ["/", '/home/', "/login/", "/logout/", "/register/"]) and \
         not request.path.startswith("/static/") and \
-        not session.get("username"):
-        print("Authentication in progress")
+        session.get("username") in [None, ""]:
+        # print("Authentication in progress")
         print(session)
         return redirect("/login/")
     elif matchpath(request.path, ["/login/", "/register/"]) and session.get("username"):
-        print("Redirecting to user")
+        # print("Redirecting to user")
         print(session.get("visiting"), request.path)
         return redirect("/user/")
-    print("Going to", request.path)
+    # print("Going to", request.path)
     return req
 
 @app.before_request
 def trackVisitUrl():
     # print("trackVisitUrl", request.path)
-    if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/", "/user/edit/", "/user/delete/"]) and \
+    if not matchpath(request.path, ["/", '/home/', "/login/", "/logout/", "/register/", "/user/edit/", "/user/delete/"]) and \
         not request.path.startswith("/static/"):
         session["visiting"] = request.path
         print("trackVisitUrl()", session.get("visiting"))
@@ -66,11 +66,12 @@ def hashPassword(password: str):
 
 # Routes
 @app.route('/')
+@app.route('/home')
 def index():
     """
     Main page.
     """
-    return render_template('main.html')
+    return render_template('main.html', session = session.get("username"))
 
 # Session Management
 @app.route('/register/', methods = ["GET", "POST"])
@@ -104,8 +105,8 @@ def register():
 @app.route('/login/', methods = ["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        passhash = hashPassword(request.form["password"])
+        username = request.form["username"].lower().strip()
+        passhash = hashPassword(request.form["password"]).strip()
         
         userInstance = User.findItem(username)
         if userInstance and userInstance.passHash == passhash:
@@ -126,7 +127,8 @@ def logout():
 # User Management
 def getUser(user: str|None = None) -> User|None:
     if user is None:
-        username = session["username"]
+        username = session.get("username")
+        if not username: return
     else:
         username = user.lower()
     userInstance = User.findItem(username)
@@ -138,8 +140,8 @@ def userPage(user:str|None = None):
     userInstance = getUser(user)
     if not userInstance:
         return "404 Not Found"
-    
-    return render_template("userPage.html", userInstance = userInstance)
+    print(session.get("username"), userInstance.username)
+    return render_template("userPage.html", userInstance = userInstance, inSession = session.get('username') == userInstance.username)
 
 @app.get("/user/@<user>/creations/")
 @app.get("/user/@<user>/creation/")
