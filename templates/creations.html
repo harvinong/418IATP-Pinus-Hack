@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    a.artblock {
+        background-color: aquamarine;
+        display: block;
+        width: fit-content;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: inherit;
+        text-decoration: inherit;
+    }
+</style>
+<title>Jala | @{{ userInstance.username }}'s Creations</title>
+{% endblock %}
+
+{% block body %}
+<h1>Jala | @{{ userInstance.username }}'s Creations</h1>
+
+{% for artInstance in artInstances: %}
+    <a href="/art/{{artInstance._id}}" class="artblock">
+        <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px">
+        <strong>{{artInstance.title}} &bull; ${{artInstance.getPrice()}}</strong>
+    </a>
+{% endfor %}
+
+{% endblock %}

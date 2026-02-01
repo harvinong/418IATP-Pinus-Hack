@@ -15,7 +15,7 @@
 
 <img src="{{ artInstance.url }}" alt="{{ artInstance.title }}" height="512px">
 <p>{{ artInstance.desc }}</p>
-<p>Price: <strong>${{ price }}</strong></p>
+<p>Price: <strong>${{ artInstance.getPrice() }}</strong></p>
 
 <h2>Tags:</h2>
 <ul>

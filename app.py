@@ -30,6 +30,20 @@ def userPage(user:str):
     
     return render_template("userPage.html", userInstance = userInstance)
 
+@app.get("/user/@<user>/creations")
+def creationPage(user:str):
+    userInstance = User.findItem(user.lower())
+    if not userInstance:
+        return "404 Not Found"
+    
+    artInstances = Art.findArtsFromArtist(userInstance._id) # type: ignore
+    
+    return render_template(
+        "creations.html",
+        userInstance = userInstance,
+        artInstances = artInstances
+        )
+
 @app.get("/art/<id>")
 def artPage(id: str):
     if not ObjectId.is_valid(id):
@@ -44,9 +58,8 @@ def artPage(id: str):
     return render_template(
         "artwork.html", 
         artInstance = artInstance, 
-        userInstance = userInstance, 
-        price = round(artInstance.price / 100, 2),
-        artAge = round((datetime.now() - artInstance.creationDate).total_seconds() / 60))
+        userInstance = userInstance,
+        artAge = round(artInstance.getAge().total_seconds()/60))
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -100,4 +113,4 @@ if __name__ == '__main__':
     # Creates the upload folder if it doesn't exist
     # if not os.path.exists(UPLOAD_FOLDER):
     #     os.makedirs(UPLOAD_FOLDER)
-    app.run()
+    app.run(debug=True)

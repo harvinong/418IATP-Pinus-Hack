@@ -5,9 +5,9 @@ else:
     from entities.collection import MYDB
     from entities.user import User
 import vercel_blob, vercel_blob.blob_store as vb_store
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson.objectid import ObjectId
-from typing import Any
+from typing import Any, Generator
 from pprint import pprint
 from io import BytesIO
 
@@ -30,14 +30,21 @@ class Art:
         else:
             self._id = existingData.get("_id")
 
+    def getPrice(self) -> str:
+        return str(self.price // 100) + "." + str(self.price % 100).rjust(2, "0")
+
+    def getAge(self) -> timedelta:
+        return datetime.now() - self.creationDate
+
     @staticmethod
     def fromDict(data: dict):
         return Art(**data)
 
     @staticmethod
     def findArtsFromArtist(artistID: ObjectId): #-> list[dict[str, Any]]|None:
-        userdata = Art._DBCOLLECTION.find({"artistID": artistID})
-        return userdata
+        artsdata = Art._DBCOLLECTION.find({"artistID": artistID})
+        for artdata in artsdata:
+            yield Art.fromDict(artdata)
     
     @staticmethod
     def findArt(artID: ObjectId): # -> Art|None:
