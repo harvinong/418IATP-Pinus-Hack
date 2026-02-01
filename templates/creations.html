@@ -2,14 +2,16 @@
 
 {% block head %}
 <style>
-    a.artblock {
-        background-color: aquamarine;
-        display: block;
-        width: fit-content;
+    .card {
+        height: fit-content;
         padding: 1rem;
-        margin-bottom: 1rem;
-        color: inherit;
-        text-decoration: inherit;
+        display: block;
+    }
+    div.view {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
 </style>
 {% if userInstance == "all": %}
@@ -20,31 +22,38 @@
 {% endblock %}
 
 {% block body %}
+
 {% if userInstance == "all": %}
-
 <h1>Jala | All Creations</h1>
-
-{% for artInstance, userInstance in artInstances.items(): %}
-<a href="/art/{{artInstance._id}}" class="artblock">
-    <h2>{{artInstance.title}}</h2>
-    <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px">
-    <strong>{{"@"+userInstance.username+" • " if userInstance else ""}}${{artInstance.getPrice()}}</strong>
-</a>
-{% endfor %}
-
 {% else: %}
-
 <h1>Jala | @{{ userInstance.username }}'s Creations</h1>
+{% endif %}
 
-{% for artInstance in artInstances: %}
-<a href="/art/{{artInstance._id}}" class="artblock">
+<div class="view">
+    
+    {% if userInstance == "all": %}
+
+    {% for artInstance, userInstance in artInstances.items(): %}
+    <a href="/art/{{artInstance._id}}" class="card">
         <h2>{{artInstance.title}}</h2>
-        <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px">
+        <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px"><br>
+        <strong>{{"@"+userInstance.username+" • " if userInstance else ""}}${{artInstance.getPrice()}}</strong>
+    </a>
+    {% endfor %}
+    
+    {% else: %}
+    
+    {% for artInstance in artInstances: %}
+    <a href="/art/{{artInstance._id}}" class="card">
+        <h2>{{artInstance.title}}</h2>
+        <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px"><br>
         <strong>${{artInstance.getPrice()}}</strong>
     </a>
-{% endfor %}
+    {% endfor %}
+    
+    {% endif %}
 
-{% endif %}
+</div>
 
 
 {% endblock %}
