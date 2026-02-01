@@ -7,7 +7,7 @@
 {% block body %}
 <h1>{{ artInstance.title }}</h1>
 {% if userInstance: %}
-    <span>by <strong>{{ userInstance.fullName }} (@{{ userInstance.username }})</strong></span><br>
+    <span>by <a href="/user/@{{userInstance.username}}">{{ userInstance.fullName }} (@{{ userInstance.username }})</a></span><br>
 {% else: %}
     <span>Unknown Artist</span><br>
 {% endif %}
@@ -23,21 +23,4 @@
     <li>{{ tag }}</li>
     {% endfor %}
 </ul>
-
-
-<h1>Art Info</h1>
-<table border="1">
-    <thead>
-        <th>Key</th>
-        <th>Value</th>
-    </thead>
-    <tbody>
-        {% for key, value in artInstance.__dict__.items(): %}
-            <tr>
-                <th>{{ key }}</th>
-                <td>{{ value }}</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}

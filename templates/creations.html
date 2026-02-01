@@ -12,17 +12,39 @@
         text-decoration: inherit;
     }
 </style>
+{% if userInstance == "all": %}
+<title>Jala | All Creations</title>
+{% else: %}
 <title>Jala | @{{ userInstance.username }}'s Creations</title>
+{% endif %}
 {% endblock %}
 
 {% block body %}
+{% if userInstance == "all": %}
+
+<h1>Jala | All Creations</h1>
+
+{% for artInstance, userInstance in artInstances.items(): %}
+<a href="/art/{{artInstance._id}}" class="artblock">
+    <h2>{{artInstance.title}}</h2>
+    <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px">
+    <strong>{{"@"+userInstance.username+" • " if userInstance else ""}}${{artInstance.getPrice()}}</strong>
+</a>
+{% endfor %}
+
+{% else: %}
+
 <h1>Jala | @{{ userInstance.username }}'s Creations</h1>
 
 {% for artInstance in artInstances: %}
-    <a href="/art/{{artInstance._id}}" class="artblock">
+<a href="/art/{{artInstance._id}}" class="artblock">
+        <h2>{{artInstance.title}}</h2>
         <img src="{{artInstance.url}}" alt="{{artInstance.title}}" height="128px">
-        <strong>{{artInstance.title}} &bull; ${{artInstance.getPrice()}}</strong>
+        <strong>${{artInstance.getPrice()}}</strong>
     </a>
 {% endfor %}
+
+{% endif %}
+
 
 {% endblock %}

@@ -48,10 +48,17 @@ class Art:
     
     @staticmethod
     def findArt(artID: ObjectId): # -> Art|None:
-        userdata = Art._DBCOLLECTION.find_one({"_id": artID})
-        if not userdata:
+        artdata = Art._DBCOLLECTION.find_one({"_id": artID})
+        if not artdata:
             return
-        return Art.fromDict(userdata)
+        return Art.fromDict(artdata)
+
+    @staticmethod
+    def getAllArts():
+        artdata = Art._DBCOLLECTION.find()
+        for artdatum in artdata:
+            yield Art.fromDict(artdatum)
+
 
     def _insertItem(self) -> ObjectId|None:
         """Insert the art into the database. Please don't use this function during development."""

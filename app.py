@@ -143,23 +143,6 @@ def userPage(user:str|None = None):
     print(session.get("username"), userInstance.username)
     return render_template("userPage.html", userInstance = userInstance, inSession = session.get('username') == userInstance.username)
 
-@app.get("/user/@<user>/creations/")
-@app.get("/user/@<user>/creation/")
-@app.get("/user/creations/")
-@app.get("/user/creation/")
-def creationPage(user:str|None = None):
-    userInstance = getUser(user)
-    if not userInstance:
-        return "404 Not Found"
-    
-    artInstances = Art.findArtsFromArtist(userInstance._id) # type: ignore
-    
-    return render_template(
-        "creations.html",
-        userInstance = userInstance,
-        artInstances = artInstances
-        )
-
 @app.route("/user/edit/", methods = ["GET", "POST"])
 def editUser():
     userInstance = getUser()
@@ -226,6 +209,47 @@ def deleteUser():
     return render_template("deleteUser.html", userInstance = userInstance)
 
 # Art Management
+@app.get("/user/@<user>/creations/")
+@app.get("/user/@<user>/creation/")
+@app.get("/user/creations/")
+@app.get("/user/creation/")
+def userCreationPage(user: str|None = None):
+    userInstance = getUser(user)
+    if not userInstance:
+        return "404 Not Found"
+    
+    artInstances = Art.findArtsFromArtist(userInstance._id) # type: ignore
+    
+    return render_template(
+        "creations.html",
+        userInstance = userInstance,
+        artInstances = artInstances
+        )
+
+@app.get("/creations/")
+@app.get("/creation/")
+def allCreationsPage():
+    artInstances = Art.getAllArts()
+
+    table: dict[Art, User|None] = {}
+    for artInstance in artInstances:
+        artistID = artInstance.artistID
+        if artistID is None:
+            table[artInstance] = None
+        else:
+            artistInstance = User.findItemByID(artistID)
+            table[artInstance] = artistInstance
+
+    return render_template(
+        "creations.html",
+        artInstances = table,
+        userInstance = "all"
+    )
+
+    
+
+
+
 @app.get("/art/<id>/")
 def artPage(id: str):
     if not ObjectId.is_valid(id):
