@@ -25,34 +25,38 @@ Session(app)
 
 # Middlewares
 def matchpath(path: str, routes: list[str]):
+    print(f"matchpath({path}, {routes}) -> {path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]}")
+    # print("   ", path, path in routes, [route[:-1] if route[-1] == "/" else route + "/" for route in routes], path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes])
     return path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]
 
 def visitPreviousUrl():
-    visiting = session.get("visiting", "/")
-    return redirect("/user") if not visiting or not matchpath(visiting, ["/login"]) else redirect(visiting)
+    visiting = session.get("visiting", None)
+    # print(matchpath(visiting, ["/login/"]))
+    print(f"Going to visit {visiting}?", (visiting and not matchpath(visiting, ["/login/"])))
+    return redirect(visiting) if visiting and not matchpath(visiting, ["/login/"]) else redirect("/user")
 
-@app.before_request
-def authenticate():
+@app.after_request
+def authenticate(req):
     if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/"]) and \
         not request.path.startswith("/static/") and \
         not session.get("username"):
         print("Authentication in progress")
-        # print(request.path not in ["/", "/login/", "/logout", "/register"])
-        # print(not request.path.startswith("/static/"))
-        # print(not session.get("username"))
-        # print()
-        return redirect("/login")
-    elif matchpath(request.path, ["/login/"]) and session.get("username"):
+        print(session)
+        return redirect("/login/")
+    elif matchpath(request.path, ["/login/", "/register/"]) and session.get("username"):
         print("Redirecting to user")
-        return redirect("/user")
+        print(session.get("visiting"), request.path)
+        return redirect("/user/")
+    print("Going to", request.path)
+    return req
 
-@app.after_request
-def trackVisitUrl(req):
+@app.before_request
+def trackVisitUrl():
+    # print("trackVisitUrl", request.path)
     if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/", "/user/edit/", "/user/delete/"]) and \
         not request.path.startswith("/static/"):
         session["visiting"] = request.path
         print("trackVisitUrl()", session.get("visiting"))
-    return req
 
 def hashPassword(password: str):
     password = request.form["password"]
@@ -108,9 +112,6 @@ def login():
             # record username and passHash in session
             session["username"] = username
             print(session.get("username"))
-            # print("Login session:")
-            # print(not visiting)
-            # print(not visiting or not matchpath(visiting, ["/login"]))
             visitPreviousUrl()
         else:
             return render_template("login.html", status = "fail")
