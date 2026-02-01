@@ -277,13 +277,13 @@ def upload():
             print(f"Generated tags for {blobResponse.get("pathname")}: {tags}")
 
             # Saving to database
-            Art(title, desc, blobResponse["url"], int(price.replace(".", "")), tags = userDefTags + tags, artistID = artist._id)
+            artInstance = Art(title, desc, blobResponse["url"], int(price.replace(".", "")), tags = userDefTags + tags, artistID = artist._id)
             
             return render_template(
                 'upload.html', 
                 message=f"File uploaded successfully! Tags: {', '.join(tags)}",
                 imageName = blobResponse.get("pathname"),
-                imageLink = blobResponse.get("url"))
+                artID = artInstance._id)
 
     return render_template('upload.html', username = username)
 
