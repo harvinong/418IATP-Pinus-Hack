@@ -2,6 +2,35 @@
 
 {% block head %}
 <title>Jala | {{ artInstance.title }}</title>
+<style>
+    .art-container {
+        display: flex;
+        flex-direction: row;
+        >* {
+            margin: 1rem;
+        }
+    }
+    .art-content {
+        flex-grow: 1;
+        padding: 1rem;
+        background-color: rgb(220, 229, 251);
+        border-radius: 1rem;
+
+        > ul {
+            display: flex;
+            
+            li {
+                background-color: #005B96;
+                color: white;
+                display: block;
+                padding: 1rem;
+                margin: 0.5rem;
+                border-radius: 1rem;
+                font-size: 1rem;
+            }
+        }
+    }
+</style>
 {% endblock %}
 
 {% block body %}
@@ -13,14 +42,18 @@
 {% endif %}
 <span>Created {{ artAge }} minutes ago</span><br>
 
-<img src="{{ artInstance.url }}" alt="{{ artInstance.title }}" height="512px">
-<p>{{ artInstance.desc }}</p>
-<p>Price: <strong>${{ artInstance.getPrice() }}</strong></p>
+<div class="art-container">
+    <img src="{{ artInstance.url }}" alt="{{ artInstance.title }}" height="512px">
+    <div class="art-content">
+        <p>{{ artInstance.desc }}</p>
+        <p>Price: <strong>${{ artInstance.getPrice() }}</strong></p>
+        <h2>Tags:</h2>
+        <ul>
+            {% for tag in artInstance.tags: %}
+            <li>{{ tag }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 
-<h2>Tags:</h2>
-<ul>
-    {% for tag in artInstance.tags: %}
-    <li>{{ tag }}</li>
-    {% endfor %}
-</ul>
 {% endblock %}
