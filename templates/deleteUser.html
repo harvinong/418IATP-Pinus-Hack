@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Jala | Delete User</title>
+{% endblock %}
+
+{% block body %}
+<h1>Deleting @{{userInstance.username}}</h1>
+
+{% if error: %}
+<p>{{error}}</p>
+{% endif %}
+
+<form action="/user/delete/" method="post">
+    <label>You are going to delete your account (@{{userInstance.username}}). Are you sure?</label>
+    <br>
+    <input type="checkbox" name="confirm" id="confirm" required>
+    <label for="confirm">Yes</label>
+    <br>
+
+    <label for="password">Enter your password to confirm your decision</label>
+    <input type="password" 
+    name="password" 
+    id="password" 
+    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*[-_@])(?!.*\s).{8,}"
+    title="Password must contain between 8 - 16 characters, no spaces, contain at least one digit, lowercase letter, uppercase letter, and special characters (-_@)."
+    minlength="8" maxlength="16" 
+    required>
+    <br>
+
+    <input type="submit" value="Delete Your Account">
+    <a href="/user">
+        <input type="button" value="Cancel">
+    </a>
+
+</form>
+
+{% endblock %}

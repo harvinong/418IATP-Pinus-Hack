@@ -27,6 +27,10 @@ Session(app)
 def matchpath(path: str, routes: list[str]):
     return path in routes or path in [route[:-1] if route[-1] == "/" else route + "/" for route in routes]
 
+def visitPreviousUrl():
+    visiting = session.get("visiting", "/")
+    return redirect("/user") if not visiting or not matchpath(visiting, ["/login"]) else redirect(visiting)
+
 @app.before_request
 def authenticate():
     if not matchpath(request.path, ["/", "/login/", "/logout/", "/register/"]) and \
@@ -104,11 +108,10 @@ def login():
             # record username and passHash in session
             session["username"] = username
             print(session.get("username"))
-            visiting = session.get("visiting")
-            print("Login session:")
-            print(not visiting)
-            print(not visiting or not matchpath(visiting, ["/login"]))
-            return redirect("/user") if not visiting or not matchpath(visiting, ["/login"]) else redirect(visiting)
+            # print("Login session:")
+            # print(not visiting)
+            # print(not visiting or not matchpath(visiting, ["/login"]))
+            visitPreviousUrl()
         else:
             return render_template("login.html", status = "fail")
 
@@ -163,19 +166,19 @@ def editUser():
     if request.method == "POST":
         userInstance = getUser()
         if not userInstance:
-            return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES, error = "user does not exist!")
+            return render_template("editUser.html", userInstance = userInstance, countries = COUNTRIES, error = "user does not exist!")
         
         oldUsername: str = userInstance.username
         newUsername: str = request.form["username"].lower().strip()
 
         print(oldUsername, newUsername, oldUsername != newUsername)
         if oldUsername != newUsername and User.findItem(newUsername):
-            return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES, error = "username exists!")
+            return render_template("editUser.html", userInstance = userInstance, countries = COUNTRIES, error = "username exists!")
 
 
         passhash: str = hashPassword(request.form["password"])
         if passhash != userInstance.passHash:
-            return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES, error = "Password does not match!")
+            return render_template("editUser.html", userInstance = userInstance, countries = COUNTRIES, error = "Password does not match!")
 
         # Get changes
         userInstance.username = newUsername
@@ -189,19 +192,35 @@ def editUser():
         # Save changes
         userInstance.update()
 
-        visiting = session.get("visiting", "/")
-        return redirect("/user") if not visiting or not matchpath(visiting, ["/login"]) else redirect(visiting)
+        return redirect("/user")
 
     print("editUser() -> ", session.get("visiting"))
-    return render_template("editUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance, countries = COUNTRIES)
+    return render_template("editUser.html", userInstance = userInstance, countries = COUNTRIES)
 
-@app.route("/user/delete/")
+@app.route("/user/delete/", methods = ["GET", "POST"])
 def deleteUser():
     userInstance = getUser()
     if not userInstance:
         return not_found()
     
-    return render_template("deleteUser.html", visiting = session.get("visiting", "/"), userInstance = userInstance)
+    if request.method == "POST":
+        userInstance = getUser()
+        if not userInstance:
+            return render_template("deleteUser.html", userInstance = userInstance, countries = COUNTRIES, error = "user does not exist!")
+
+        print(request.form.get("confirm"))
+        if request.form.get("confirm") != 'yes':
+            return render_template("deleteUser.html", userInstance = userInstance, countries = COUNTRIES, error = "You must confirm your decision!")
+
+        passhash: str = hashPassword(request.form["password"])
+        if passhash != userInstance.passHash:
+            return render_template("deleteUser.html", userInstance = userInstance, countries = COUNTRIES, error = "Password does not match!")
+        
+        userInstance.deleteItem(passhash)
+
+        return redirect("/logout")
+    
+    return render_template("deleteUser.html", userInstance = userInstance)
 
 # Art Management
 @app.get("/art/<id>/")
