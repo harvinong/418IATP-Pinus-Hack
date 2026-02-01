@@ -65,9 +65,10 @@ def register():
 
         fullname: str = request.form["fullName"].strip()
         surname: str = request.form["surname"].strip()
-        country: str = request.form["country"]
-        website: str|None = request.form.get("website")
-        website = website.strip() if website else None
+        country: str|None = request.form["country"]
+        country = country if country != "unspecified" else None
+        website: str|None = request.form["website"]
+        website = website.strip() if website != "" else None
         passhash: str = hashPassword(password)
 
         User(username, passhash, fullname, surname, country = country, website = website)
@@ -158,8 +159,8 @@ def upload():
     username = session["username"]
     if request.method == 'POST':
         # Form fields
-        title = request.form["title"]
-        desc = request.form["desc"]
+        title = request.form["title"].strip()
+        desc = request.form["desc"].strip()
         price = request.form["price"]
         userDefTags = request.form["tags"].split()
 
