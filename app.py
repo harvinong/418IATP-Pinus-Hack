@@ -6,6 +6,7 @@ from entities.user import *
 from tag import get_tags_for_image
 from bson.objectid import ObjectId
 from datetime import datetime
+from hashlib import sha256
 
 app = Flask(__name__)
 # Reference: https://www.geeksforgeeks.org/python/how-to-use-flask-session-in-python-flask/
@@ -14,6 +15,22 @@ app.config["SESSION_TYPE"] = "filesystem"
 # UPLOAD_FOLDER = os.path.join('static', 'uploads')
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
+
+# Middlewares
+@app.before_request
+def authenticate():
+    if request.path not in ["/", "/login", "/logout"] and \
+        not request.path.startswith("/static/") and \
+        not session.get("username"):
+        return redirect("/login")
+    elif request.path == "/login" and session.get("username"):
+        return redirect("/user")
+
+def hashPassword(password: str):
+    password = request.form["password"]
+    passHash = sha256(password.encode())
+    print(passHash.hexdigest())
+    return passHash.hexdigest()
 
 # Routes
 @app.route('/')
@@ -27,10 +44,10 @@ def index():
 def login():
     if request.method == "POST":
         username = request.form["username"]
-        password = request.form["password"]
+        passhash = hashPassword(request.form["password"])
         
         userInstance = User.findItem(username)
-        if userInstance and userInstance.passHash == password:
+        if userInstance and userInstance.passHash == passhash:
             # record username and passHash in session
             session["username"] = username
             return redirect("/user")
@@ -42,15 +59,9 @@ def login():
 @app.get("/logout")
 def logout():
     session["username"] = None
-    return redirect("/")
+    return render_template("logout.html")
 
-@app.before_request
-def authenticate():
-    if request.path not in ["/", "/login"] and \
-        not request.path.startswith("/static/") and \
-        not session.get("username"):
-        return redirect("/login")
-
+# User Management
 @app.get("/user")
 def selfUserPage():
     username = session["username"]
@@ -82,6 +93,7 @@ def creationPage(user:str):
         artInstances = artInstances
         )
 
+# Art Management
 @app.get("/art/<id>")
 def artPage(id: str):
     if not ObjectId.is_valid(id):
@@ -143,9 +155,10 @@ def upload():
 
     return render_template('upload.html')
 
-@app.get("/<nonexistent>")
-def notFound(nonexistent):
-    return f"<h1>404 Not Found</h1><p>\"{nonexistent}\" does not exist.</p><p>Please consider going outside and touching grass!</p>"
+# Not Found (404)
+@app.errorhandler(404)
+def not_found(err):
+    return render_template("notfound.html")
 
 if __name__ == '__main__':
     # Creates the upload folder if it doesn't exist
