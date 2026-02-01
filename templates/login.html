@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Jala | Log-in</title>
+{% endblock %}
+
+{% block body %}
+<h1>Login</h1>
+<form action="/login" method="post">
+    <label for="username">Username</label>
+    <input type="text" name="username" id="username" required>
+    <br>
+
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required>
+    <br>
+
+    <input type="submit" value="Submit">
+</form>
+
+{% if status == "fail": %}
+    <p>Incorrect username or password</p>
+{% endif %}
+
+{% endblock %}

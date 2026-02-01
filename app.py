@@ -1,5 +1,6 @@
 from pprint import pprint
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_session import Session
 from entities.art import *
 from entities.user import *
 from tag import get_tags_for_image
@@ -7,8 +8,12 @@ from bson.objectid import ObjectId
 from datetime import datetime
 
 app = Flask(__name__)
+# Reference: https://www.geeksforgeeks.org/python/how-to-use-flask-session-in-python-flask/
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
 # UPLOAD_FOLDER = os.path.join('static', 'uploads')
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+Session(app)
 
 # Routes
 @app.route('/')
@@ -18,9 +23,42 @@ def index():
     """
     return render_template('main.html')
 
-@app.get("/user/")
+@app.route('/login', methods = ["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        
+        userInstance = User.findItem(username)
+        if userInstance and userInstance.passHash == password:
+            # record username and passHash in session
+            session["username"] = username
+            return redirect("/user")
+        else:
+            return render_template("login.html", status = "fail")
+
+    return render_template("login.html")
+
+@app.get("/logout")
+def logout():
+    session["username"] = None
+    return redirect("/")
+
+@app.before_request
+def authenticate():
+    if request.path not in ["/", "/login"] and \
+        not request.path.startswith("/static/") and \
+        not session.get("username"):
+        return redirect("/login")
+
+@app.get("/user")
 def selfUserPage():
-    return "Hello, user! :3"
+    username = session["username"]
+    userInstance = User.findItem(username)
+    if not userInstance:
+        return "404 Not Found"
+    
+    return render_template("userPage.html", userInstance = userInstance)
 
 @app.get("/user/@<user>")
 def userPage(user:str):
