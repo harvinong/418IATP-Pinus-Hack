@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
 from entities.art import *
 from entities.user import *
+from entities.countries import COUNTRIES
+from entities.collection import CLIENT
 from tag import get_tags_for_image
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -10,8 +12,13 @@ from hashlib import sha256
 
 app = Flask(__name__)
 # Reference: https://www.geeksforgeeks.org/python/how-to-use-flask-session-in-python-flask/
+# https://stackoverflow.com/questions/72025723/how-to-configure-mongodb-for-flask-session
 app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_TYPE"] = "mongodb"
+app.config["SESSION_MONGODB"] = CLIENT
+app.config["SESSION_MONGODB_DB"] = 'JalaArtMarket'
+app.config["SESSION_MONGODB_COLLECTION"] = 'sessions'
+# app.config["SESSION_TYPE"] = "filesystem"
 # UPLOAD_FOLDER = os.path.join('static', 'uploads')
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
@@ -19,9 +26,10 @@ Session(app)
 # Middlewares
 @app.before_request
 def authenticate():
-    if request.path not in ["/", "/login", "/logout"] and \
+    if request.path not in ["/", "/login", "/logout", "/register"] and \
         not request.path.startswith("/static/") and \
         not session.get("username"):
+        session["visiting"] = request.path
         return redirect("/login")
     elif request.path == "/login" and session.get("username"):
         return redirect("/user")
@@ -40,6 +48,35 @@ def index():
     """
     return render_template('main.html')
 
+# Session Management
+@app.route('/register', methods = ["GET", "POST"])
+def register():
+    if request.method == "POST":
+        password: str = request.form["password"].strip()
+        confirm: str = request.form["password"].strip()
+
+        if password != confirm:
+            return render_template("registration.html", countries = COUNTRIES, error = "password and confirmation does not match.")
+        
+        username: str = request.form["username"].lower().strip()
+
+        if User.findItem(username):
+            return render_template("registration.html", countries = COUNTRIES, error = "username exists!")
+
+        fullname: str = request.form["fullName"].strip()
+        surname: str = request.form["surname"].strip()
+        country: str|None = request.form["country"]
+        country = country if country != "unspecified" else None
+        website: str|None = request.form["website"]
+        website = website.strip() if website != "" else None
+        passhash: str = hashPassword(password)
+
+        User(username, passhash, fullname, surname, country = country, website = website)
+
+        return redirect("/login")
+    
+    return render_template("registration.html", countries = COUNTRIES)
+
 @app.route('/login', methods = ["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -50,7 +87,8 @@ def login():
         if userInstance and userInstance.passHash == passhash:
             # record username and passHash in session
             session["username"] = username
-            return redirect("/user")
+            visiting = session.get("visiting")
+            return redirect("/user") if not visiting else redirect(visiting)
         else:
             return render_template("login.html", status = "fail")
 
@@ -58,30 +96,31 @@ def login():
 
 @app.get("/logout")
 def logout():
-    session["username"] = None
+    session.clear()
     return render_template("logout.html")
 
 # User Management
-@app.get("/user")
-def selfUserPage():
-    username = session["username"]
+def getUser(user: str|None = None) -> User|None:
+    if user is None:
+        username = session["username"]
+    else:
+        username = user.lower()
     userInstance = User.findItem(username)
+    return userInstance
+
+@app.get("/user/@<user>/")
+@app.get("/user/")
+def userPage(user:str|None = None):
+    userInstance = getUser(user)
     if not userInstance:
         return "404 Not Found"
     
     return render_template("userPage.html", userInstance = userInstance)
 
-@app.get("/user/@<user>")
-def userPage(user:str):
-    userInstance = User.findItem(user.lower())
-    if not userInstance:
-        return "404 Not Found"
-    
-    return render_template("userPage.html", userInstance = userInstance)
-
-@app.get("/user/@<user>/creations")
-def creationPage(user:str):
-    userInstance = User.findItem(user.lower())
+@app.get("/user/@<user>/creations/")
+@app.get("/user/creations/")
+def creationPage(user:str|None = None):
+    userInstance = getUser(user)
     if not userInstance:
         return "404 Not Found"
     
@@ -93,8 +132,18 @@ def creationPage(user:str):
         artInstances = artInstances
         )
 
+@app.get("/user/edit")
+def editUser():
+    userInstance = getUser()
+
+    if not userInstance:
+        return not_found()
+
+    return render_template("editUser.html", userInstance = userInstance)
+
+
 # Art Management
-@app.get("/art/<id>")
+@app.get("/art/<id>/")
 def artPage(id: str):
     if not ObjectId.is_valid(id):
         return "Invalid id"
@@ -111,16 +160,16 @@ def artPage(id: str):
         userInstance = userInstance,
         artAge = round(artInstance.getAge().total_seconds()/60))
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/art/upload/', methods=['GET', 'POST'])
 def upload():
     """
     Handles the artwork upload process.
     """
+    username = session["username"]
     if request.method == 'POST':
         # Form fields
-        username = request.form["artist"]
-        title = request.form["title"]
-        desc = request.form["desc"]
+        title = request.form["title"].strip()
+        desc = request.form["desc"].strip()
         price = request.form["price"]
         userDefTags = request.form["tags"].split()
 
@@ -153,12 +202,15 @@ def upload():
                 imageName = blobResponse.get("pathname"),
                 imageLink = blobResponse.get("url"))
 
-    return render_template('upload.html')
+    return render_template('upload.html', username = username)
 
 # Not Found (404)
 @app.errorhandler(404)
-def not_found(err):
-    return render_template("notfound.html")
+def not_found(err = None):
+    if request.path.islower():
+        return render_template("notfound.html")
+    else:
+        return redirect(request.path.lower())
 
 if __name__ == '__main__':
     # Creates the upload folder if it doesn't exist

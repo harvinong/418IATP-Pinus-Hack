@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Jala | Register</title>
+{% endblock %}
+
+{% block body %}
+<h1>Register</h1>
+
+{% if error: %}
+<p>{{error}}</p>
+{% endif %}
+
+<form action="/register" method="post">
+    <label for="username">Username</label>
+    <input type="text" name="username" id="username" required>
+    <br>
+
+    <label for="fullName">Full Name</label>
+    <input type="text" name="fullName" id="fullName" required>
+    <br>
+    
+    <label for="surname">Surname</label>
+    <input type="text" name="surname" id="surname">
+    <br>
+
+    <label for="website">Website</label>
+    <input type="url" name="website" id="website">
+    <br>
+
+    <label for="country">Country</label>
+    <select name="country" id="country" required>
+        <option value="unspecified">Unspecified</option>
+        {% for country in countries: %}
+        <option value="{{country}}">{{country}}</option>
+        {% endfor %}
+        <option value="other">Other...</option>
+    </select>
+
+    <label for="password">Password</label>
+    <input type="password" 
+    name="password" 
+    id="password" 
+    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*[-_@])(?!.*\s).{8,}"
+    title="Password must contain between 8 - 16 characters, no spaces, contain at least one digit, lowercase letter, uppercase letter, and special characters (-_@)."
+    minlength="8" maxlength="16" 
+    required>
+    <br>
+
+    <label for="confirmPass">Confirm Password</label>
+    <input type="password" 
+    name="confirmPass" 
+    id="confirmPass" 
+    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*[-_@])(?!.*\s).{8,}"
+    title="Password must contain between 8 - 16 characters, no spaces, contain at least one digit, lowercase letter, uppercase letter, and special characters (-_@)."
+    minlength="8" maxlength="16" 
+    required>
+    <br>
+
+    <input type="submit" value="Register">
+
+</form>
+
+{% endblock %}
