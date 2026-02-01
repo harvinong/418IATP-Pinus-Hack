@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
 from entities.art import *
 from entities.user import *
+from entities.collection import CLIENT
 from tag import get_tags_for_image
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -10,7 +11,12 @@ from hashlib import sha256
 
 app = Flask(__name__)
 # Reference: https://www.geeksforgeeks.org/python/how-to-use-flask-session-in-python-flask/
+# https://stackoverflow.com/questions/72025723/how-to-configure-mongodb-for-flask-session
 app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "mongodb"
+app.config["SESSION_MONGODB"] = CLIENT
+app.config["SESSION_MONGODB_DB"] = 'JalaArtMarket'
+app.config["SESSION_MONGODB_COLLECTION"] = 'sessions'
 # app.config["SESSION_TYPE"] = "filesystem"
 # UPLOAD_FOLDER = os.path.join('static', 'uploads')
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
