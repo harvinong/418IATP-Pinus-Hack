@@ -9,7 +9,7 @@
 
 <body>
     <main class="container">
-        <h1>Upload Your Artwork</h1>
+        <h1>Upload Your Artwork as @{{username}}</h1>
 
         {% if message %}
         <p class="message">{{ message }}</p>
@@ -21,10 +21,6 @@
 
         <br>
         <form method="post" enctype="multipart/form-data">
-            <label for="artist">Artist</label>
-            <input type="text" name="artist" id="artist" required>
-            <br>
-            
             <label>Art Image</label>
             <input type="file" name="file" id="file" accept="image/*" required>
             <br>

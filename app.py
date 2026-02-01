@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_session import Session
 from entities.art import *
 from entities.user import *
+from entities.countries import COUNTRIES
 from entities.collection import CLIENT
 from tag import get_tags_for_image
 from bson.objectid import ObjectId
@@ -25,9 +26,10 @@ Session(app)
 # Middlewares
 @app.before_request
 def authenticate():
-    if request.path not in ["/", "/login", "/logout"] and \
+    if request.path not in ["/", "/login", "/logout", "/register"] and \
         not request.path.startswith("/static/") and \
         not session.get("username"):
+        session["visiting"] = request.path
         return redirect("/login")
     elif request.path == "/login" and session.get("username"):
         return redirect("/user")
@@ -46,6 +48,35 @@ def index():
     """
     return render_template('main.html')
 
+# Session Management
+@app.route('/register', methods = ["GET", "POST"])
+def register():
+    if request.method == "POST":
+        password: str = request.form["password"].strip()
+        confirm: str = request.form["password"].strip()
+
+        if password != confirm:
+            return render_template("registration.html", countries = COUNTRIES, error = "password and confirmation does not match.")
+        
+        username: str = request.form["username"].lower().strip()
+
+        if User.findItem(username):
+            return render_template("registration.html", countries = COUNTRIES, error = "username exists!")
+
+        fullname: str = request.form["fullName"].strip()
+        surname: str = request.form["surname"].strip()
+        country: str = request.form["country"]
+        website: str|None = request.form.get("website")
+        website = website.strip() if website else None
+        passhash: str = hashPassword(password)
+
+        User(username, passhash, fullname, surname, country = country, website = website)
+
+        return redirect("/login")
+    
+    return render_template("registration.html", countries = COUNTRIES)
+
+
 @app.route('/login', methods = ["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -56,7 +87,8 @@ def login():
         if userInstance and userInstance.passHash == passhash:
             # record username and passHash in session
             session["username"] = username
-            return redirect("/user")
+            visiting = session.get("visiting")
+            return redirect("/user") if not visiting else redirect(visiting)
         else:
             return render_template("login.html", status = "fail")
 
@@ -64,21 +96,13 @@ def login():
 
 @app.get("/logout")
 def logout():
-    session["username"] = None
+    session.clear()
     return render_template("logout.html")
 
 # User Management
-@app.get("/user")
-def selfUserPage():
-    username = session["username"]
-    userInstance = User.findItem(username)
-    if not userInstance:
-        return "404 Not Found"
-    
-    return render_template("userPage.html", userInstance = userInstance)
-
 @app.get("/user/@<user>")
 def userPage(user:str):
+    print(user)
     userInstance = User.findItem(user.lower())
     if not userInstance:
         return "404 Not Found"
@@ -98,6 +122,15 @@ def creationPage(user:str):
         userInstance = userInstance,
         artInstances = artInstances
         )
+
+@app.get("/user")
+def selfUserPage():
+    username = session["username"]
+    userInstance = User.findItem(username)
+    if not userInstance:
+        return "404 Not Found"
+    
+    return render_template("userPage.html", userInstance = userInstance)
 
 # Art Management
 @app.get("/art/<id>")
@@ -122,9 +155,9 @@ def upload():
     """
     Handles the artwork upload process.
     """
+    username = session["username"]
     if request.method == 'POST':
         # Form fields
-        username = request.form["artist"]
         title = request.form["title"]
         desc = request.form["desc"]
         price = request.form["price"]
@@ -159,7 +192,7 @@ def upload():
                 imageName = blobResponse.get("pathname"),
                 imageLink = blobResponse.get("url"))
 
-    return render_template('upload.html')
+    return render_template('upload.html', username = username)
 
 # Not Found (404)
 @app.errorhandler(404)
